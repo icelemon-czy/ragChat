@@ -1,0 +1,16 @@
+PyQt5
+qasync
+langchain-community
+langchain-core
+langchain-chroma
+langchain-text-splitters
+dashscope
+chromadb
+openai
+unstructured
+python-docx
+pypdf
+python-magic-bin; sys_platform == 'win32'
+python-magic; sys_platform != 'win32'
+unstructured[docx,pdf]
+python-magic
