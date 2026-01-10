@@ -60,13 +60,31 @@ class KnowledgeWidget(QWidget):
         main_layout = QVBoxLayout(self)
         
         # 1. Header
-        header = QLabel("Knowledge Base Editor")
+        header = QLabel("Knowledge Base")
         header.setStyleSheet("font-size: 16px; font-weight: bold; margin-bottom: 10px;")
         main_layout.addWidget(header)
         
         # 2. Document List Area
         self.doc_list = QListWidget()
-        self.doc_list.setStyleSheet("background-color: white; border: none;")
+        
+        # 修改: 彻底禁用选中和焦点框，解决视觉错位问题
+        self.doc_list.setSelectionMode(QListWidget.NoSelection)
+        self.doc_list.setFocusPolicy(Qt.NoFocus)
+
+        # Style: 仅保留 Hover 效果
+        self.doc_list.setStyleSheet("""
+            QListWidget {
+                background-color: white;
+                border: none;
+            }
+            QListWidget::item {
+                border: none;
+                padding: 0px;
+            }
+            QListWidget::item:hover {
+                background-color: #fafafa; /* 鼠标悬停时的极淡灰色 */
+            }
+        """)
         # Enable smooth scrolling (pixel-based instead of item-based)
         self.doc_list.setVerticalScrollMode(QListWidget.ScrollPerPixel)
         self.doc_list.verticalScrollBar().setSingleStep(10) # Adjust scrolling speed
@@ -74,14 +92,14 @@ class KnowledgeWidget(QWidget):
         self.doc_list.setSpacing(0)
         main_layout.addWidget(self.doc_list)
         
-        # Refresh Button
-        refresh_btn = QPushButton("Refresh List")
-        refresh_btn.clicked.connect(self.load_documents)
-        main_layout.addWidget(refresh_btn)
-        
-        # 3. Add Document Form
-        form_group = QGroupBox("Add New Document")
-        form_layout = QVBoxLayout()
+        # Separator Line
+        sep = QFrame()
+        sep.setFrameShape(QFrame.HLine)
+        sep.setFrameShadow(QFrame.Sunken)
+        sep.setStyleSheet("background-color: #ddd; margin-top: 10px; margin-bottom: 10px;")
+        main_layout.addWidget(sep)
+
+        # 3. Add Document Form (Removed GroupBox wrapper)
         
         # Styles for inputs
         input_style = "color: black; background-color: white; border: 1px solid #ccc; padding: 5px;"
@@ -96,30 +114,30 @@ class KnowledgeWidget(QWidget):
             QPushButton:hover { background-color: #e0e0e0; }
         """)
         self.upload_btn.clicked.connect(self.browse_file)
-        form_layout.addWidget(self.upload_btn)
+        main_layout.addWidget(self.upload_btn)
         
         self.title_input = QLineEdit()
         self.title_input.setPlaceholderText("Document Title")
         self.title_input.setStyleSheet(input_style)
-        form_layout.addWidget(self.title_input)
+        main_layout.addWidget(self.title_input)
         
         self.content_input = QTextEdit()
         self.content_input.setPlaceholderText("Paste document content here or upload file...")
         self.content_input.setMaximumHeight(150)
         self.content_input.setStyleSheet(input_style)
-        form_layout.addWidget(self.content_input)
+        main_layout.addWidget(self.content_input)
         
-        self.add_btn = QPushButton("Save to Knowledge Base")
+        self.add_btn = QPushButton("Save")
         self.add_btn.setStyleSheet("background-color: #5c6bc0; color: white; padding: 8px;")
         self.add_btn.clicked.connect(self.add_document)
-        form_layout.addWidget(self.add_btn)
+        main_layout.addWidget(self.add_btn)
         
         self.progress = QProgressBar()
         self.progress.setVisible(False)
-        form_layout.addWidget(self.progress)
+        main_layout.addWidget(self.progress)
         
-        form_group.setLayout(form_layout)
-        main_layout.addWidget(form_group)
+        # form_group.setLayout(form_layout)
+        # main_layout.addWidget(form_group)
 
         # Initial Load: Trigger after UI is ready
         QTimer.singleShot(100, self.load_documents)

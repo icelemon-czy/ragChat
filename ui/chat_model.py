@@ -50,42 +50,98 @@ class ChatDelegate(QStyledItemDelegate):
         text = index.data(Qt.DisplayRole)
         role = index.data(Qt.UserRole)
         
-        # Setup Text Document for rich text / wrapping
+        # Layout Constants
+        avatar_size = 36
+        margin_h = 10
+        margin_v = 5
+        bubble_padding = 10
+        max_bubble_width = option.rect.width() * 0.7
+        
+        # Setup Text Document
         self.doc.setMarkdown(text if text else "")
         self.doc.setDefaultFont(option.font)
-        self.doc.setTextWidth(option.rect.width() * 0.7) # Max width 70%
+        self.doc.setTextWidth(max_bubble_width - bubble_padding * 2) 
 
-        # Calculate dimensions
+        # Calculate Text Dimensions
         doc_height = self.doc.size().height()
         doc_width = self.doc.idealWidth()
         
-        # Bubbles
-        padding = 10
-        bubble_rect = QRectF(0, 0, doc_width + padding * 2, doc_height + padding * 2)
+        # Bubble Rect size
+        bubble_w = doc_width + bubble_padding * 2
+        bubble_h = doc_height + bubble_padding * 2
+        bubble_rect = QRectF(0, 0, bubble_w, bubble_h)
         
+        # Determine Positions
         if role == "user":
-            # Right aligned
-            trans_x = option.rect.width() - bubble_rect.width() - 10
-            trans_y = option.rect.y() + 5
-            bg_color = QColor("#DCF8C6") # Light Green
+            # --- User Style (Right) ---
+            bg_color = QColor("#95EC69") # WeChat Green
+            # Avatar Position
+            avatar_rect = QRectF(
+                option.rect.width() - margin_h - avatar_size,
+                option.rect.y() + margin_v,
+                avatar_size,
+                avatar_size
+            )
+            # Bubble Position
+            bubble_rect.moveTopLeft(
+                QRectF(
+                    avatar_rect.left() - margin_h - bubble_w,
+                    option.rect.y() + margin_v,
+                    bubble_w,
+                    bubble_h
+                ).topLeft()
+            )
+            avatar_color = QColor("#007AFF") # Blue
+            avatar_text = "Me"
         else:
-            # Left aligned
-            trans_x = 10
-            trans_y = option.rect.y() + 5
-            bg_color = QColor("#E0E0E0") # Light Gray
+            # --- AI Style (Left) ---
+            bg_color = QColor("white") 
+            # Avatar Position
+            avatar_rect = QRectF(
+                margin_h,
+                option.rect.y() + margin_v,
+                avatar_size,
+                avatar_size
+            )
+            # Bubble Position
+            bubble_rect.moveTopLeft(
+                QRectF(
+                    avatar_rect.right() + margin_h,
+                    option.rect.y() + margin_v,
+                    bubble_w,
+                    bubble_h
+                ).topLeft()
+            )
+            avatar_color = QColor("#5c6bc0") # Primary Purple
+            avatar_text = "AI"
 
-        painter.translate(trans_x, trans_y)
-
-        # Draw Bubble Background
-        painter.setBrush(bg_color)
+        # --- Draw Avatar ---
+        painter.setRenderHint(QPainter.Antialiasing)
         painter.setPen(Qt.NoPen)
+        painter.setBrush(avatar_color)
+        painter.drawEllipse(avatar_rect)
+        
+        # Draw Avatar Text (Initials)
+        painter.setPen(Qt.white)
+        font = painter.font()
+        font.setBold(True)
+        font.setPixelSize(12)
+        painter.setFont(font)
+        painter.drawText(avatar_rect, Qt.AlignCenter, avatar_text)
+
+        # --- Draw Bubble ---
+        painter.setPen(Qt.NoPen)
+        painter.setBrush(bg_color)
         painter.drawRoundedRect(bubble_rect, 10, 10)
 
-        # Draw Text
-        painter.translate(padding, padding)
-        # abstractTextDocumentLayout needs a paint context
+        # --- Draw Text Content ---
+        # Translate painter to inside the bubble for text rendering
+        painter.translate(bubble_rect.x() + bubble_padding, bubble_rect.y() + bubble_padding)
         ctx = QAbstractTextDocumentLayout.PaintContext()
         ctx.palette.setColor(QPalette.Text, Qt.black)
+        
+        # Restore font for content
+        painter.setFont(option.font)
         self.doc.documentLayout().draw(painter, ctx)
 
         painter.restore()
@@ -95,8 +151,16 @@ class ChatDelegate(QStyledItemDelegate):
         if not text:
             return QSize(0, 0)
         
-        self.doc.setMarkdown(text)
-        self.doc.setTextWidth(option.rect.width() * 0.7)
+        # Padding constants must match paint()
+        avatar_size = 36
+        margin_v = 5
+        bubble_padding = 10
+        max_bubble_width = option.rect.width() * 0.7
         
-        height = self.doc.size().height() + 30 # + padding/margins
-        return QSize(option.rect.width(), int(height))
+        self.doc.setMarkdown(text)
+        self.doc.setTextWidth(max_bubble_width - bubble_padding * 2)
+        
+        text_height = self.doc.size().height() + bubble_padding * 2
+        total_height = max(text_height, avatar_size) + margin_v * 2 + 10 # +10 extra buffer
+        
+        return QSize(option.rect.width(), int(total_height))

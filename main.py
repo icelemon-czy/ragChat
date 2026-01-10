@@ -13,7 +13,7 @@ def main():
     asyncio.set_event_loop(loop)
     
     # Default API Key (Replace 'sk-...' with your actual key if you want to skip input)
-    DEFAULT_API_KEY = "。。。" 
+    DEFAULT_API_KEY = "。。。sk-..." 
     
     # Check API Key
     api_key = os.environ.get("DASHSCOPE_API_KEY") or DEFAULT_API_KEY

@@ -43,7 +43,7 @@ class ChatWidget(QWidget):
         # Input Area
         input_layout = QHBoxLayout()
         self.input_field = QLineEdit()
-        self.input_field.setPlaceholderText("Ask me anything about our policies...")
+        self.input_field.setPlaceholderText("Ask anything ..")
         self.input_field.setStyleSheet("""
             QLineEdit {
                 padding: 10px;
@@ -77,7 +77,7 @@ class ChatWidget(QWidget):
         layout.addLayout(input_layout)
         
         # Welcome message
-        self.chat_model.add_message("ai", "Welcome! I am your RAG Assistant powered by Tongyi (Qwen). Ask away!")
+        self.chat_model.add_message("ai", "Welcome! I am your RAG Assistant。 Ask away!")
 
     @asyncSlot()
     async def send_message(self):
